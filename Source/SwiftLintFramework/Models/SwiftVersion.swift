@@ -13,6 +13,11 @@ enum SwiftVersion {
     case three
 
     static let current: SwiftVersion = {
+        let isSandboxed = ProcessInfo.processInfo.environment["APP_SANDBOX_CONTAINER_ID"] != nil
+        if isSandboxed {
+            // Fall back on Swift 3 if app is Sandboxed and SourceKit requests will fail
+            return .three
+        }
         let file = File(contents: "#sourceLocation()")
         let kinds = file.syntaxMap.tokens.flatMap { SyntaxKind(rawValue: $0.type) }
         if kinds == [.identifier] {
